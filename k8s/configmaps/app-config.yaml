@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shopflow-config
+  namespace: shopflow
+  labels:
+    app.kubernetes.io/part-of: shopflow-platform
+data:
+  LOG_LEVEL: "INFO"
+  LOG_JSON: "true"
+  JWT_ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  POSTGRES_USER: "shopflow_user"
+  POSTGRES_DB: "postgres"
+  AUTH_SERVICE_URL: "http://auth-service:8001"
+  USER_SERVICE_URL: "http://user-service:8002"
+  PRODUCT_SERVICE_URL: "http://product-service:8003"
+  ORDER_SERVICE_URL: "http://order-service:8004"
+  PAYMENT_SERVICE_URL: "http://payment-service:8005"
+  NOTIFICATION_SERVICE_URL: "http://notification-service:8006"
+  RATE_LIMIT_REQUESTS: "60"
+  RATE_LIMIT_WINDOW_SECONDS: "60"
+  PROXY_TIMEOUT_SECONDS: "10.0"
