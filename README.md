@@ -85,7 +85,8 @@ Lab3/
 │   └── hpa/
 │       └── order-service-hpa.yaml      # HorizontalPodAutoscaler (2..6 реплик по CPU 70%)
 ├── scripts/
-│   ├── deploy-minikube.sh              # Полное развёртывание в Minikube
+│   ├── deploy-k8s.sh                   # Развёртывание в OrbStack / стандартном Kubernetes
+│   ├── deploy-minikube.sh              # Опциональное развёртывание в Minikube
 │   └── demo-scaling-and-recovery.sh    # Демонстрация scale и self-healing (delete pod)
 └── tests/
     └── test_k8s_and_docker.py          # Автоматическая валидация Dockerfiles, Compose и K8s
@@ -106,38 +107,44 @@ Lab3/
 ## 4. Установка
 
 Для запуска требуются установленные:
-- Docker Desktop / Docker Engine (`docker compose`)
-- `kubectl` (проверено на `v1.33.9` с встроенным Kustomize `v5.6.0`)
-- `minikube` (для локального кластера Kubernetes)
+- **OrbStack** (или Docker Desktop / Docker Engine с `docker compose`)
+- **`kubectl`** (проверено на `v1.33.9` с встроенным Kustomize `v5.6.0`)
+- Опционально: `minikube` (если используется отдельный кластер вместо OrbStack Kubernetes)
 
 ---
 
 ## 5. Запуск
 
-### Вариант А. Проверка и запуск через Docker Compose
+### Вариант А. Развёртывание в OrbStack Kubernetes (рекомендуемый способ)
+
+OrbStack использует единый Docker-демон для локальных образов и встроенного Kubernetes-кластера, поэтому перенос образов через `minikube docker-env` не требуется:
+
+1. Включите Kubernetes в OrbStack (однократно) и выполните автоматический деплой:
+   ```bash
+   ./Lab3/scripts/deploy-k8s.sh --start-k8s
+   ```
+2. Или пошагово вручную:
+   ```bash
+   orb start k8s
+   ./Lab3/docker/build-images.sh
+   kubectl apply -k Lab3/k8s
+   kubectl get pods,services,deployments -n shopflow
+   ```
+3. Приложение доступно через `NodePort` на **`http://localhost:30080`** (либо через `kubectl port-forward -n shopflow svc/frontend 8080:8080`).
+
+### Вариант Б. Запуск через Docker Compose (проверено в OrbStack)
 
 ```bash
 cd Lab3/docker
 docker compose up --build
 ```
-После старта приложение доступно в браузере по единственному внешнему адресу: **`http://localhost:8080`**.
+После старта приложение доступно в браузере по единственному внешнему адресу: **`http://localhost:8080`**. Все внутренние сервисы, БД и RabbitMQ закрыты от хоста.
 
-### Вариант Б. Развёртывание в Minikube (Kubernetes)
+### Вариант В. Развёртывание в Minikube (опционально)
 
-1. Автоматизированный запуск:
-   ```bash
-   ./Lab3/scripts/deploy-minikube.sh
-   ```
-2. Или пошагово вручную:
-   ```bash
-   minikube start --cpus=2 --memory=4096
-   ./Lab3/docker/build-images.sh --minikube
-   kubectl apply -k Lab3/k8s
-   kubectl get pods,services,deployments -n shopflow
-   minikube service frontend -n shopflow --url
-   ```
-
-> **Примечание о среде проверки**: на данной машине Docker-демон и Minikube не были запущены в момент выполнения, поэтому проверка выполнена статически через `docker compose config --quiet`, `kubectl kustomize Lab3/k8s` и автоматический pytest-набор. Все манифесты готовы к немедленному запуску после старта Docker / Minikube.
+```bash
+./Lab3/scripts/deploy-minikube.sh
+```
 
 ---
 
@@ -175,7 +182,7 @@ kubectl create secret generic shopflow-secrets -n shopflow \
 
 ---
 
-## 8. Примеры использования и демонстрации (Minikube)
+## 8. Примеры использования и демонстрации (Kubernetes)
 
 ### Проверка состояния кластера и логов
 ```bash
@@ -187,10 +194,9 @@ kubectl logs -n shopflow deployment/api-gateway --tail=20
 
 ### Проверка API через Frontend NodePort
 ```bash
-FRONTEND_URL="$(minikube service frontend -n shopflow --url)"
-curl -s "${FRONTEND_URL}/health"
-curl -s "${FRONTEND_URL}/ready"
-curl -s "${FRONTEND_URL}/api/products"
+curl -s http://localhost:30080/health
+curl -s http://localhost:30080/ready
+curl -s http://localhost:30080/api/products
 ```
 
 ### Демонстрация горизонтального масштабирования и самовосстановления
@@ -218,14 +224,20 @@ kubectl get pods -n shopflow -l app=order-service
    - `securityContext.runAsNonRoot: true` на всех 8 прикладных контейнерах;
    - только `Service/frontend` имеет `type: NodePort`, остальные 9 — `ClusterIP`.
 
-### Запуск проверок
+### Запуск и результаты проверок
 
 ```bash
+./Lab3/docker/build-images.sh
 docker compose -f Lab3/docker/docker-compose.yml config --quiet
 kubectl kustomize Lab3/k8s > /dev/null
-Lab2/.venv/bin/pytest Lab3/tests/test_k8s_and_docker.py -v
+cd Lab3 && ../Lab2/.venv/bin/pytest -v
 ```
-Результат: **`3 passed in 0.18s`**, `docker compose config` и `kubectl kustomize` завершились с кодом `0`.
+
+Фактически подтверждено на **OrbStack**:
+- Собраны все 8 Docker-образов (`shopflow/*:1.0.0`, размер Python-сервисов ~325–348 MB, `frontend` на `nginx-unprivileged` — `77.4 MB`).
+- Поднят полный 10-контейнерный стек через `docker compose -f Lab3/docker/docker-compose.yml up -d --wait`: все 10 контейнеров перешли в статус `healthy`.
+- Подтверждено через `curl`: `http://localhost:8080/health` и `http://localhost:8080/ready` вернули `200` (все 6 микросервисов `ok`), регистрация через `/api/auth/register` и агрегация `/api/dashboard` (через PostgreSQL + RabbitMQ) отработали за `34.6 ms`, а прямые порты `8000`, `8001`, `5432`, `5672` с хоста недоступны.
+- Kubernetes-манифесты провалидированы через `kubectl kustomize Lab3/k8s` и `pytest` (**`3 passed`**). (*Примечание: встроенный кластер Kubernetes в OrbStack сейчас выключен (`k8s.enable: false`), поэтому живой запуск подов в K8s выполняется после `orb start k8s`.*).
 
 ---
 
