@@ -25,3 +25,4 @@ resources:
   - services/api-gateway.yaml
   - services/frontend.yaml
   - hpa/order-service-hpa.yaml
+  - network-policies/network-policies.yaml

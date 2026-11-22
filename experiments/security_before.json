@@ -1,0 +1,45 @@
+{
+  "phase": "before",
+  "timestamp": "2026-11-22T20:35:11.925166+00:00",
+  "total_checks": 4,
+  "passed": 0,
+  "failed": 4,
+  "findings": [
+    {
+      "check_id": "K8S-01",
+      "title": "Hardcoded RabbitMQ credentials in Deployment env",
+      "severity": "High",
+      "standard": "CIS Kubernetes 5.4.1",
+      "status": "FAIL",
+      "evidence": "Plaintext env values found in rabbitmq Deployment: ['RABBITMQ_DEFAULT_USER', 'RABBITMQ_DEFAULT_PASS']",
+      "remediation": "Load RABBITMQ_DEFAULT_USER and RABBITMQ_DEFAULT_PASS via secretKeyRef."
+    },
+    {
+      "check_id": "K8S-02",
+      "title": "Excessive Secret exposure via envFrom (cross-service DB DSN access)",
+      "severity": "High",
+      "standard": "Least Privilege / CIS 5.4.2",
+      "status": "FAIL",
+      "evidence": "Services mounting full shopflow-secrets via envFrom: ['api-gateway', 'auth-service', 'notification-service', 'order-service', 'payment-service', 'product-service', 'user-service']",
+      "remediation": "Replace broad envFrom secretRef with scoped per-service secretKeyRef env entries."
+    },
+    {
+      "check_id": "K8S-03",
+      "title": "Pod Security Standards (Restricted): drop ALL capabilities & RuntimeDefault seccomp",
+      "severity": "Medium",
+      "standard": "Kubernetes PSS Restricted",
+      "status": "FAIL",
+      "evidence": "Deployments missing capabilities.drop=ALL or seccompProfile: ['api-gateway', 'auth-service', 'frontend', 'notification-service', 'order-service', 'payment-service', 'product-service', 'user-service']",
+      "remediation": "Set securityContext.capabilities.drop=['ALL'] and seccompProfile.type='RuntimeDefault'."
+    },
+    {
+      "check_id": "K8S-04",
+      "title": "Kubernetes NetworkPolicy isolation (default-deny + least-privilege flows)",
+      "severity": "High",
+      "standard": "CIS Kubernetes 5.3.2",
+      "status": "FAIL",
+      "evidence": "Found 0 NetworkPolicies (default-deny=False)",
+      "remediation": "Add default-deny-ingress NetworkPolicy and explicit allow policies per tier."
+    }
+  ]
+}

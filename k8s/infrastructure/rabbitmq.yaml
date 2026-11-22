@@ -26,9 +26,15 @@ spec:
               name: management
           env:
             - name: RABBITMQ_DEFAULT_USER
-              value: guest
+              valueFrom:
+                secretKeyRef:
+                  name: shopflow-secrets
+                  key: RABBITMQ_DEFAULT_USER
             - name: RABBITMQ_DEFAULT_PASS
-              value: guest
+              valueFrom:
+                secretKeyRef:
+                  name: shopflow-secrets
+                  key: RABBITMQ_DEFAULT_PASS
           livenessProbe:
             exec:
               command: ["rabbitmq-diagnostics", "-q", "ping"]

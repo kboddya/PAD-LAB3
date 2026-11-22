@@ -1,0 +1,45 @@
+{
+  "phase": "after",
+  "timestamp": "2026-11-22T20:40:08.644088+00:00",
+  "total_checks": 4,
+  "passed": 4,
+  "failed": 0,
+  "findings": [
+    {
+      "check_id": "K8S-01",
+      "title": "Hardcoded RabbitMQ credentials in Deployment env",
+      "severity": "High",
+      "standard": "CIS Kubernetes 5.4.1",
+      "status": "PASS",
+      "evidence": "RabbitMQ credentials injected from Secret",
+      "remediation": "Load RABBITMQ_DEFAULT_USER and RABBITMQ_DEFAULT_PASS via secretKeyRef."
+    },
+    {
+      "check_id": "K8S-02",
+      "title": "Excessive Secret exposure via envFrom (cross-service DB DSN access)",
+      "severity": "High",
+      "standard": "Least Privilege / CIS 5.4.2",
+      "status": "PASS",
+      "evidence": "Each microservice receives only its own DB DSN and required keys via secretKeyRef",
+      "remediation": "Replace broad envFrom secretRef with scoped per-service secretKeyRef env entries."
+    },
+    {
+      "check_id": "K8S-03",
+      "title": "Pod Security Standards (Restricted): drop ALL capabilities & RuntimeDefault seccomp",
+      "severity": "Medium",
+      "standard": "Kubernetes PSS Restricted",
+      "status": "PASS",
+      "evidence": "All 8 app Deployments drop ALL Linux capabilities and enforce RuntimeDefault seccomp",
+      "remediation": "Set securityContext.capabilities.drop=['ALL'] and seccompProfile.type='RuntimeDefault'."
+    },
+    {
+      "check_id": "K8S-04",
+      "title": "Kubernetes NetworkPolicy isolation (default-deny + least-privilege flows)",
+      "severity": "High",
+      "standard": "CIS Kubernetes 5.3.2",
+      "status": "PASS",
+      "evidence": "Found 11 NetworkPolicies (default-deny=True)",
+      "remediation": "Add default-deny-ingress NetworkPolicy and explicit allow policies per tier."
+    }
+  ]
+}

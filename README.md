@@ -237,7 +237,20 @@ cd Lab3 && ../Lab2/.venv/bin/pytest -v
 - Собраны все 8 Docker-образов (`shopflow/*:1.0.0`, размер Python-сервисов ~325–348 MB, `frontend` на `nginx-unprivileged` — `77.4 MB`).
 - Поднят полный 10-контейнерный стек через `docker compose -f Lab3/docker/docker-compose.yml up -d --wait`: все 10 контейнеров перешли в статус `healthy`.
 - Подтверждено через `curl`: `http://localhost:8080/health` и `http://localhost:8080/ready` вернули `200` (все 6 микросервисов `ok`), регистрация через `/api/auth/register` и агрегация `/api/dashboard` (через PostgreSQL + RabbitMQ) отработали за `34.6 ms`, а прямые порты `8000`, `8001`, `5432`, `5672` с хоста недоступны.
-- Kubernetes-манифесты провалидированы через `kubectl kustomize Lab3/k8s` и `pytest` (**`3 passed`**). (*Примечание: встроенный кластер Kubernetes в OrbStack сейчас выключен (`k8s.enable: false`), поэтому живой запуск подов в K8s выполняется после `orb start k8s`.*).
+- Kubernetes-манифесты провалидированы через `kubectl kustomize Lab3/k8s`, `pytest` (**`4 passed in 0.15s`**, включая [test_k8s_security.py](file:///Users/kboddya/Dev/Univ/PAD/Lab3/tests/test_k8s_security.py)) и развёрнуты в живом кластере **OrbStack Kubernetes** (`14` Pod'ов `1/1 Running`, `11` `NetworkPolicy`, E2E проверка через `http://localhost:30080`).
+
+### Тестирование безопасности Kubernetes (До и После исправлений)
+
+Проведён аудит по **CIS Kubernetes Benchmark** и **Pod Security Standards (Restricted)** скриптом [scripts/k8s_security_audit.py](file:///Users/kboddya/Dev/Univ/PAD/Lab3/scripts/k8s_security_audit.py). Подробный отчёт: [docs/security_report.md](file:///Users/kboddya/Dev/Univ/PAD/Lab3/docs/security_report.md).
+
+| ID | Проверка безопасности Kubernetes | Уровень | ДО исправлений | ПОСЛЕ исправлений | Принятая мера |
+| --- | --- | --- | --- | --- | --- |
+| `K8S-01` | Захардкоженные логин/пароль в `rabbitmq.yaml` (`CIS 5.4.1`) | High | **FAIL** (plaintext `guest`) | **PASS** (из `Secret`) | Перенесено в `secretKeyRef: shopflow-secrets` |
+| `K8S-02` | Монтирование всех секретов через `envFrom` (`CIS 5.4.2`) | High | **FAIL** (7 сервисов) | **PASS** (точечный доступ) | Индивидуальный `secretKeyRef` только для своей БД и токенов |
+| `K8S-03` | `PSS Restricted`: `drop ALL` и `RuntimeDefault` seccomp | Medium | **FAIL** (8 Deployments) | **PASS** (8/8 hardened) | Добавлены `capabilities.drop: ["ALL"]`, `seccompProfile: RuntimeDefault`, UID `10001`/`101` |
+| `K8S-04` | Сетевая изоляция `NetworkPolicy` (`CIS 5.3.2`) | High | **FAIL** (`0` политик) | **PASS** (`11` политик) | Добавлен `default-deny-ingress` + явные allow-правила для каждого слоя |
+
+**Итог по Lab3**: ДО исправлений — **`0/4 PASS`**, ПОСЛЕ исправлений — **`4/4 PASS (0 FAIL)`**.
 
 ---
 

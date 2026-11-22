@@ -46,6 +46,7 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
       JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-in-production-32chars}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token-32chars}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_JSON: ${LOG_JSON:-true}
     expose:
@@ -73,6 +74,7 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
       JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-in-production-32chars}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token-32chars}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_JSON: ${LOG_JSON:-true}
     expose:
@@ -100,6 +102,7 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
       JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-in-production-32chars}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token-32chars}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_JSON: ${LOG_JSON:-true}
     expose:
@@ -127,6 +130,7 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
       JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-in-production-32chars}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token-32chars}
       USER_SERVICE_URL: http://user-service:8002
       PRODUCT_SERVICE_URL: http://product-service:8003
       PAYMENT_SERVICE_URL: http://payment-service:8005
@@ -163,6 +167,7 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
       JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-in-production-32chars}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token-32chars}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_JSON: ${LOG_JSON:-true}
     expose:
@@ -190,6 +195,7 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
       JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-in-production-32chars}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token-32chars}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_JSON: ${LOG_JSON:-true}
     expose:
@@ -215,6 +221,7 @@ services:
     environment:
       JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-in-production-32chars}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-service-token-32chars}
       AUTH_SERVICE_URL: http://auth-service:8001
       USER_SERVICE_URL: http://user-service:8002
       PRODUCT_SERVICE_URL: http://product-service:8003
@@ -224,6 +231,7 @@ services:
       RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-60}
       RATE_LIMIT_WINDOW_SECONDS: ${RATE_LIMIT_WINDOW_SECONDS:-60}
       PROXY_TIMEOUT_SECONDS: ${PROXY_TIMEOUT_SECONDS:-10.0}
+      TRUST_PROXY_HEADERS: ${TRUST_PROXY_HEADERS:-true}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_JSON: ${LOG_JSON:-true}
     expose:
