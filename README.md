@@ -41,21 +41,21 @@
 
 ```mermaid
 flowchart TB
-    User([Внешний клиент / Браузер]) -->|NodePort :30080| FE_SVC[Service: frontend<br/>NodePort :8080]
-    FE_SVC --> FE_POD[Deployment: frontend<br/>replicas: 2 | NGINX SPA]
+    User(["Внешний клиент / Браузер"]) -->|"NodePort :30080"| FE_SVC["Service: frontend<br/>NodePort :8080"]
+    FE_SVC --> FE_POD["Deployment: frontend<br/>replicas: 2 (NGINX SPA)"]
 
-    FE_POD -->|http://api-gateway:8000 /api/*| GW_SVC[Service: api-gateway<br/>ClusterIP :8000]
-    GW_SVC --> GW_POD[Deployment: api-gateway<br/>replicas: 2]
+    FE_POD -->|"http://api-gateway:8000 /api/*"| GW_SVC["Service: api-gateway<br/>ClusterIP :8000"]
+    GW_SVC --> GW_POD["Deployment: api-gateway<br/>replicas: 2"]
 
-    GW_POD --> AUTH[ClusterIP auth-service :8001]
-    GW_POD --> USER[ClusterIP user-service :8002]
-    GW_POD --> PROD[ClusterIP product-service :8003<br/>replicas: 2]
-    GW_POD --> ORD[ClusterIP order-service :8004<br/>replicas: 2 + HPA 2..6]
-    GW_POD --> PAY[ClusterIP payment-service :8005]
-    GW_POD --> NOTIF[ClusterIP notification-service :8006]
+    GW_POD --> AUTH["ClusterIP auth-service :8001"]
+    GW_POD --> USER["ClusterIP user-service :8002"]
+    GW_POD --> PROD["ClusterIP product-service :8003<br/>replicas: 2"]
+    GW_POD --> ORD["ClusterIP order-service :8004<br/>replicas: 2 + HPA 2..6"]
+    GW_POD --> PAY["ClusterIP payment-service :8005"]
+    GW_POD --> NOTIF["ClusterIP notification-service :8006"]
 
-    AUTH & USER & PROD & ORD & PAY & NOTIF --> PG[ClusterIP postgres :5432<br/>+ PVC 1Gi]
-    AUTH & USER & PROD & ORD & PAY & NOTIF -.-> RMQ[ClusterIP rabbitmq :5672]
+    AUTH & USER & PROD & ORD & PAY & NOTIF --> PG["ClusterIP postgres :5432<br/>+ PVC 1Gi"]
+    AUTH & USER & PROD & ORD & PAY & NOTIF -.-> RMQ["ClusterIP rabbitmq :5672"]
 ```
 
 ### 2.2. Структура `Lab3/`
