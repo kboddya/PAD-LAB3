@@ -29,7 +29,7 @@ def test_all_eight_dockerfiles_and_dockerignores_exist_and_use_non_root() -> Non
         assert (path.parent / ".dockerignore").is_file(), f"Missing .dockerignore near {path}"
         text = path.read_text(encoding="utf-8")
         assert "EXPOSE " in text
-        assert ("USER appuser" in text) or ("nginx-unprivileged" in text), f"Non-root user required in {path}"
+        assert ("USER 10001:10001" in text) or ("nginx-unprivileged" in text), f"Numeric non-root user required in {path}"
 
 
 def test_lab3_compose_isolates_internal_services_and_exposes_only_frontend() -> None:
